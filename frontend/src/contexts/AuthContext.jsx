@@ -6,10 +6,20 @@ export const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  const login = (userData) => {
-    setUser(userData);
+ // In frontend/src/contexts/AuthContext.jsx - Simplify:
+const login = async (email, password) => {
+  // Mock login - works without backend
+  const mockUser = {
+    id: 1,
+    name: 'Test User',
+    email: email,
+    role: 'customer'
   };
-
+  
+  localStorage.setItem('user', JSON.stringify(mockUser));
+  setUser(mockUser);
+  return { success: true, user: mockUser };
+};
   const logout = () => {
     setUser(null);
   };
