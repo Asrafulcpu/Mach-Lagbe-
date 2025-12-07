@@ -1,0 +1,158 @@
+/* ---------- HERO SECTION ---------- */
+.hero {
+  position: relative;
+  height: 70vh;
+  background: url('/image/hero-fish-bg.jpg') center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 0 30px 30px;
+  overflow: hidden;
+}
+
+.hero-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(2px);
+}
+
+.hero-content {
+  position: relative;
+  text-align: center;
+  color: #fff;
+  max-width: 700px;
+  z-index: 2;
+}
+
+.hero-content h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.hero-content p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-bottom: 25px;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn-primary {
+  background: #0088ff;
+  padding: 12px 22px;
+  border-radius: 10px;
+  color: white;
+  font-size: 17px;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.btn-primary:hover {
+  background: #006bd1;
+}
+
+.btn-outline {
+  border: 2px solid #fff;
+  padding: 10px 22px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 17px;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.btn-outline:hover {
+  background: #ffffff33;
+}
+
+/* ---------- FEATURES SECTION ---------- */
+.features {
+  padding: 60px 30px;
+  text-align: center;
+}
+
+.features h2 {
+  font-size: 2.2rem;
+  margin-bottom: 40px;
+  font-weight: 700;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 25px;
+}
+
+.feature-card {
+  background: white;
+  padding: 25px;
+  border-radius: 18px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  transition: 0.3s;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.feature-card h3 {
+  margin-bottom: 10px;
+}
+
+/* ---------- POPULAR FISH SECTION ---------- */
+.popular-fish {
+  padding: 60px 30px;
+  text-align: center;
+}
+
+.popular-fish h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 40px;
+}
+
+.fish-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 25px;
+}
+
+.fish-card {
+  background: white;
+  padding: 15px;
+  border-radius: 18px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  text-align: center;
+  transition: 0.3s;
+}
+
+.fish-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.fish-photo {
+  width: 150px;
+  height: 150px;
+  border-radius: 12px;
+  object-fit: cover;
+  margin-bottom: 12px;
+}
+
+.fish-card h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
