@@ -1,33 +1,89 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-// Create and export the context
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
- // In frontend/src/contexts/AuthContext.jsx - Simplify:
-const login = async (email, password) => {
-  // Mock login - works without backend
-  const mockUser = {
-    id: 1,
-    name: 'Test User',
-    email: email,
-    role: 'customer'
+  // Check for existing user on app start
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('user');
+      }
+    }
+    setLoading(false);
+  }, []);
+
+  // Mock login function - works without backend
+  const login = async (email, password) => {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Mock user data - in real app, this would come from backend
+    const mockUser = {
+      id: Date.now(),
+      name: email.split('@')[0] || 'Demo User', // Extract name from email
+      email: email,
+      role: email.includes('admin') ? 'admin' : 'customer'
+    };
+    
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    localStorage.setItem('token', 'mock-jwt-token-for-demo');
+    setUser(mockUser);
+    
+    return { 
+      success: true, 
+      user: mockUser,
+      message: 'Login successful (demo mode)' 
+    };
   };
-  
-  localStorage.setItem('user', JSON.stringify(mockUser));
-  setUser(mockUser);
-  return { success: true, user: mockUser };
-};
+
+  // Mock register function
+  const register = async (userData) => {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Mock user data
+    const mockUser = {
+      id: Date.now(),
+      name: userData.name,
+      email: userData.email,
+      phone: userData.phone || '',
+      role: 'customer',
+      createdAt: new Date().toISOString()
+    };
+    
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    localStorage.setItem('token', 'mock-jwt-token-for-demo');
+    setUser(mockUser);
+    
+    return { 
+      success: true, 
+      user: mockUser,
+      message: 'Registration successful (demo mode)' 
+    };
+  };
+
   const logout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('cart'); // Clear cart on logout
     setUser(null);
   };
 
   const value = {
     user,
     login,
-    logout
+    register,
+    logout,
+    loading,
+    isAuthenticated: !!user
   };
 
   return (
@@ -37,7 +93,10 @@ const login = async (email, password) => {
   );
 }
 
-// Export the hook
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }

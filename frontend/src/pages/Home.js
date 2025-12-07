@@ -48,11 +48,13 @@ const Home = () => {
           <h2>Popular Fish Varieties</h2>
           <div className="grid grid-4">
             <div className="fish-type">
-              <div className="fish-image">🐟</div>
+              <div className="fish-image">
+                <img src="image/ilish.png"/>
+              </div>
               <h4>Ilish</h4>
             </div>
             <div className="fish-type">
-              <div className="fish-image">🐠</div>
+              <div className="fish-image"></div>
               <h4>Rui</h4>
             </div>
             <div className="fish-type">
