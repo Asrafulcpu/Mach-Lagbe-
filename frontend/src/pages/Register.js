@@ -48,19 +48,20 @@ const Register = () => {
     }
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const result = await register(formData);
+      // Remove confirmPassword before sending to API
+      const { confirmPassword, ...userData } = formData;
+      const result = await register(userData);
       
       if (result.success) {
         navigate('/');
       } else {
-        setError(result.message || 'Registration failed');
+        setError(result.error || result.message || 'Registration failed');
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
       console.error('Registration error:', err);
+      // Show the actual error message from the backend
+      const errorMessage = err?.error || err?.message || err?.response?.data?.error || 'An error occurred. Please check if the backend server is running.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -71,7 +72,7 @@ const Register = () => {
       <div className="container">
         <div className="register-container">
           <div className="register-header">
-            <h2>Join 🐟 Mach Lagbe</h2>
+            <h2>Join Mach Lagbe</h2>
             <p>Create your account</p>
           </div>
 

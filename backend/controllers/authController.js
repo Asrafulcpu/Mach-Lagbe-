@@ -3,9 +3,9 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
 // Generate JWT Token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d'
+const generateToken = (userId) => {
+  return jwt.sign({ userId }, process.env.JWT_SECRET || 'secret', {
+    expiresIn: '7d'
   });
 };
 
@@ -111,10 +111,18 @@ exports.login = async (req, res) => {
 // @access  Private
 exports.getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id || req.user.id).select('-password');
     res.json({
       success: true,
-      user
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        role: user.role,
+        createdAt: user.createdAt
+      }
     });
   } catch (error) {
     res.status(400).json({

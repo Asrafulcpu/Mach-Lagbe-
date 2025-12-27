@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import * as authService from '../services/authService';
 
 export const AuthContext = createContext();
 
@@ -8,71 +9,95 @@ export function AuthProvider({ children }) {
 
   // Check for existing user on app start
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        localStorage.removeItem('user');
+    const checkAuth = async () => {
+      const savedToken = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('user');
+      
+      if (savedToken && savedUser) {
+        try {
+          // Verify token is still valid by fetching current user
+          const response = await authService.getCurrentUser();
+          if (response.success && response.user) {
+            setUser(response.user);
+            localStorage.setItem('user', JSON.stringify(response.user));
+          } else {
+            // Token invalid, clear storage
+            authService.logout();
+          }
+        } catch (error) {
+          // Token invalid or expired, clear storage
+          console.error('Auth check failed:', error);
+          authService.logout();
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    checkAuth();
   }, []);
 
-  // Mock login function - works without backend
+  // Login function - connects to real backend
   const login = async (email, password) => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Mock user data - in real app, this would come from backend
-    const mockUser = {
-      id: Date.now(),
-      name: email.split('@')[0] || 'Demo User', // Extract name from email
-      email: email,
-      role: email.includes('admin') ? 'admin' : 'customer'
-    };
-    
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    localStorage.setItem('token', 'mock-jwt-token-for-demo');
-    setUser(mockUser);
-    
-    return { 
-      success: true, 
-      user: mockUser,
-      message: 'Login successful (demo mode)' 
-    };
+    try {
+      const response = await authService.login(email, password);
+      
+      if (response.success && response.token && response.user) {
+        // Store token and user
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        setUser(response.user);
+        
+        return { 
+          success: true, 
+          user: response.user,
+          message: response.message || 'Login successful' 
+        };
+      } else {
+        return { 
+          success: false, 
+          error: response.error || 'Login failed' 
+        };
+      }
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error.error || error.message || 'Login failed' 
+      };
+    }
   };
 
-  // Mock register function
+  // Register function - connects to real backend
   const register = async (userData) => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Mock user data
-    const mockUser = {
-      id: Date.now(),
-      name: userData.name,
-      email: userData.email,
-      phone: userData.phone || '',
-      role: 'customer',
-      createdAt: new Date().toISOString()
-    };
-    
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    localStorage.setItem('token', 'mock-jwt-token-for-demo');
-    setUser(mockUser);
-    
-    return { 
-      success: true, 
-      user: mockUser,
-      message: 'Registration successful (demo mode)' 
-    };
+    try {
+      const response = await authService.register(userData);
+      
+      if (response.success && response.token && response.user) {
+        // Store token and user
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        setUser(response.user);
+        
+        return { 
+          success: true, 
+          user: response.user,
+          message: 'Registration successful' 
+        };
+      } else {
+        return { 
+          success: false, 
+          error: response.error || 'Registration failed' 
+        };
+      }
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error.error || error.message || 'Registration failed' 
+      };
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    authService.logout();
     localStorage.removeItem('cart'); // Clear cart on logout
     setUser(null);
   };

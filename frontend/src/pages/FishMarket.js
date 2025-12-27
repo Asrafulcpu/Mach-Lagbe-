@@ -1,72 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
+import { getFish } from '../services/fishService';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import './FishMarket.css';
 
 const FishMarket = () => {
-  // Mock data with image paths
-  const [fishes] = useState([
-    { 
-      id: 1, 
-      name: 'Hilsa (Ilish)', 
-      pricePerKg: 1200, 
-      category: 'saltwater', 
-      stock: 50,
-      description: 'The national fish of Bangladesh, known for its unique taste',
-      image: '/image/ilish.png'
-    },
-    { 
-      id: 2, 
-      name: 'Rohu', 
-      pricePerKg: 300, 
-      category: 'freshwater', 
-      stock: 100,
-      description: 'Freshwater carp, very popular in Bengali cuisine',
-      image: '/image/rui.png'
-    },
-    { 
-      id: 3, 
-      name: 'Katla', 
-      pricePerKg: 350, 
-      category: 'freshwater', 
-      stock: 80,
-      description: 'Indian carp, known for its large size and tasty meat',
-      image: '/image/katla.jpg'
-    },
-    { 
-      id: 4, 
-      name: 'Pangas', 
-      pricePerKg: 250, 
-      category: 'freshwater', 
-      stock: 120,
-      description: 'Catfish variety, affordable and widely available',
-      image: '/image/pangash.png'
-    },
-    { 
-      id: 5, 
-      name: 'Tilapia', 
-      pricePerKg: 280, 
-      category: 'freshwater', 
-      stock: 90,
-      description: 'Mild-tasting freshwater fish, easy to cook',
-      image: '/image/tilapia.webp'
-    },
-    { 
-      id: 6, 
-      name: 'Shrimp (Chingri)', 
-      pricePerKg: 800, 
-      category: 'shellfish', 
-      stock: 40,
-      description: 'Fresh sea shrimp, perfect for curries',
-      image: '/image/chingri.png'
-    }
-  ]);
-
+  const [fishes, setFishes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { addToCart } = useCart();
 
+  useEffect(() => {
+    const fetchFishes = async () => {
+      try {
+        setLoading(true);
+        const response = await getFish();
+        if (response.success && response.data) {
+          // Normalize data: ensure _id exists and map imageUrl to image
+          const normalizedFishes = response.data.map(fish => ({
+            ...fish,
+            _id: fish._id || fish.id,
+            id: fish._id || fish.id, // Support both for compatibility
+            image: fish.imageUrl || fish.image || '', // Support both imageUrl and image
+            imageUrl: fish.imageUrl || fish.image || ''
+          }));
+          setFishes(normalizedFishes);
+        } else {
+          setError('Failed to load fish');
+        }
+      } catch (err) {
+        console.error('Error fetching fish:', err);
+        setError(err.error || 'Failed to load fish. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFishes();
+  }, []);
+
   const handleAddToCart = (fish) => {
-    addToCart(fish, 1);
+    // Ensure fish has _id for cart operations
+    const fishWithId = {
+      ...fish,
+      _id: fish._id || fish.id
+    };
+    addToCart(fishWithId, 1);
     alert(`${fish.name} added to cart!`);
   };
+
+  if (loading) {
+    return (
+      <div className="fish-market" style={{ padding: '40px 20px', textAlign: 'center' }}>
+        <LoadingSpinner />
+        <p>Loading fresh fish...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="fish-market" style={{ padding: '40px 20px', textAlign: 'center' }}>
+        <div style={{ color: 'red', marginBottom: '20px' }}>
+          ⚠️ {error}
+        </div>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="btn btn-primary"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="fish-market" style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
@@ -86,8 +92,13 @@ const FishMarket = () => {
           gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
           gap: '20px' 
         }}>
-          {fishes.map(fish => (
-            <div key={fish.id} className="fish-card" style={{ 
+          {fishes.length === 0 ? (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
+              <p>No fish available at the moment. Please check back later.</p>
+            </div>
+          ) : (
+            fishes.map(fish => (
+            <div key={fish._id || fish.id} className="fish-card" style={{ 
               background: 'white', 
               borderRadius: '15px', 
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)', 
@@ -145,7 +156,8 @@ const FishMarket = () => {
                 </button>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

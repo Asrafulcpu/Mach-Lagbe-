@@ -23,7 +23,7 @@ const Header = () => {
         <div className="header-content">
           {/* Logo */}
           <Link to="/" className="logo">
-            <h2>🐟 Mach Lagbe?</h2>
+            <h2>Mach Lagbe?</h2>
           </Link>
 
           {/* Navigation */}

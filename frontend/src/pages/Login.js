@@ -59,7 +59,7 @@ const Login = () => {
       <div className="container">
         <div className="login-container">
           <div className="login-header">
-            <h2>Welcome Back to 🐟 Mach Lagbe</h2>
+            <h2>Welcome Back to Mach Lagbe</h2>
             <p>Login to your account</p>
           </div>
 
