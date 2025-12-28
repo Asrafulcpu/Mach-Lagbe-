@@ -225,3 +225,5 @@ Check the error messages:
 - **Browser console**: Shows client-side errors
 - **Network tab**: Shows API request/response details
 
+
+

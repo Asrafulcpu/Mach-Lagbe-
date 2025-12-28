@@ -75,3 +75,5 @@ Run this in PowerShell to generate one:
 
 Copy the output and paste it after `JWT_SECRET=` in your `.env` file.
 
+
+
