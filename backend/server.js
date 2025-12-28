@@ -9,6 +9,15 @@ const app = express();
 // Import routes
 const authRoutes = require("./routes/auth");
 const fishRoutes = require("./routes/fish");
+let ordersRoutes = null;
+try {
+  ordersRoutes = require("./routes/orders");
+} catch (err) {
+  if (err && err.code !== 'MODULE_NOT_FOUND') {
+    throw err;
+  }
+  console.warn("⚠️  ./routes/orders not found — skipping /api/orders mount");
+}
 
 // Middleware
 app.use(cors({
@@ -63,6 +72,9 @@ app.get("/api/health", (req, res) => {
 // Mount route files
 app.use("/api/auth", authRoutes);
 app.use("/api/fish", fishRoutes);
+if (ordersRoutes) {
+  app.use("/api/orders", ordersRoutes);
+}
 
 // ==================== ERROR HANDLING ====================
 

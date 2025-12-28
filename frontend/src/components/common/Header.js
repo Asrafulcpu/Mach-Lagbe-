@@ -13,6 +13,14 @@ const Header = () => {
   const fileInputRef = useRef(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  // data-URL fallback SVG used when user's avatar is missing or fails to load
+  const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+    <svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24'>
+      <circle cx='12' cy='12' r='12' fill='%230ea5a2'/>
+      <path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-3 0-6 1.5-6 4.5V21h12v-2.5C18 15.5 15 14 12 14z' fill='%23fff'/>
+    </svg>
+  `);
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -39,7 +47,12 @@ const Header = () => {
                 <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
                 <button className="avatar-btn" onClick={() => setIsDropdownOpen(!isDropdownOpen)} aria-haspopup="true">
                   {user?.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="avatar-img" />
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="avatar-img"
+                      onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = DEFAULT_AVATAR; }}
+                    />
                   ) : (
                     <div className="avatar-fallback">{(user?.name || 'U').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase()}</div>
                   )}
@@ -48,7 +61,16 @@ const Header = () => {
                 {isDropdownOpen && (
                   <div className="profile-dropdown">
                     <div className="profile-info">
-                      {user?.avatar ? <img src={user.avatar} alt={user.name} className="avatar-img-lg" /> : <div className="avatar-fallback-lg">{(user?.name || 'U').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase()}</div>}
+                      {user?.avatar ? (
+                        <img
+                          src={user.avatar}
+                          alt={user.name}
+                          className="avatar-img-lg"
+                          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = DEFAULT_AVATAR; }}
+                        />
+                      ) : (
+                        <div className="avatar-fallback-lg">{(user?.name || 'U').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase()}</div>
+                      )}
                       <div className="profile-text">
                         <div className="profile-name">{user?.name}</div>
                         <div className="profile-email">{user?.email}</div>

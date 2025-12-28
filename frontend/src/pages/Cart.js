@@ -9,14 +9,38 @@ const Cart = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!user) {
       navigate('/login');
       return;
     }
-    // Add checkout logic here
-    alert('Order placed successfully!');
-    clearCart();
+
+    // Build order payload
+    const items = cartItems.map(i => ({
+      fishId: i._id,
+      name: i.name,
+      pricePerKg: i.pricePerKg,
+      quantity: i.quantity,
+      subtotal: +(i.pricePerKg * i.quantity).toFixed(2)
+    }));
+    const total = +(getCartTotal() + 50).toFixed(2);
+
+    try {
+      const ordersService = await import('../services/ordersService');
+      const result = await ordersService.createOrder({ items, total, user: { id: user.id, name: user.name, email: user.email } });
+      if (result?.success) {
+        alert('Order placed successfully! Order id: ' + result.order._id);
+        clearCart();
+        navigate('/dashboard');
+      } else {
+        throw new Error(result?.message || 'Failed to place order');
+      }
+
+    } catch (err) {
+      console.error(err);
+      const msg = err?.error || err?.message || 'Error placing order. Please ensure backend is running and you are logged in.';
+      alert(msg);
+    }
   };
 
   if (cartItems.length === 0) {

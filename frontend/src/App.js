@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import Header from './components/common/Header';
@@ -15,27 +15,42 @@ import './styles/components.css';
 import './styles/pages.css';
 
 function App() {
+  const router = createBrowserRouter(
+    [
+      {
+        path: '/',
+        element: <RootLayout />,
+        children: [
+          { index: true, element: <Home /> },
+          { path: 'login', element: <Login /> },
+          { path: 'register', element: <Register /> },
+          { path: 'market', element: <FishMarket /> },
+          { path: 'dashboard', element: <Dashboard /> },
+          { path: 'cart', element: <Cart /> },
+        ],
+      },
+    ],
+    { future: { v7_startTransition: true, v7_relativeSplatPath: true } }
+  );
+
   return (
     <AuthProvider>
       <CartProvider>
-        <Router>
-          <div className="App">
-            <Header />
-            <main className="main-content">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/market" element={<FishMarket />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/cart" element={<Cart />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </Router>
+        <RouterProvider router={router} />
       </CartProvider>
     </AuthProvider>
+  );
+}
+
+function RootLayout() {
+  return (
+    <div className="App">
+      <Header />
+      <main className="main-content">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
   );
 }
 

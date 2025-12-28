@@ -28,12 +28,17 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle 401 Unauthorized - clear token and redirect to login
+    // Handle 401 Unauthorized - only redirect if we're not using mock auth
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      // Optionally redirect to login page
-      window.location.href = '/login';
+      const token = localStorage.getItem('token');
+      const isMockToken = typeof token === 'string' && token.startsWith('mock-jwt-token-for-demo-');
+
+      if (!isMockToken) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        // Optionally redirect to login page
+        window.location.href = '/login';
+      }
     }
     
     // Return error response for component handling
@@ -42,6 +47,9 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+
+
 
 
 

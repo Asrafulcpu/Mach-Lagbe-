@@ -77,3 +77,6 @@ Copy the output and paste it after `JWT_SECRET=` in your `.env` file.
 
 
 
+
+
+
