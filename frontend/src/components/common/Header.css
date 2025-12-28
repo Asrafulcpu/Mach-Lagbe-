@@ -38,6 +38,15 @@
   color: #1b8057;
 }
 
+.nav-username {
+  display: inline-block;
+  background: #f3f4f6;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  font-weight: 600;
+  color: #111827;
+}
+
 .cart-icon {
   position: relative;
   font-size: 1.2rem;

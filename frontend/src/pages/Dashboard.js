@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 // Simple Card component - defined inline
 const Card = ({ children, className = '', onClick }) => {
@@ -45,6 +46,11 @@ const TargetIcon = () => <span>🎯</span>;
 
 const Dashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
+  const { user } = useAuth();
+
+  const initials = user?.name
+    ? user.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()
+    : 'U';
   
   // Mock data
   const topProducts = [
@@ -64,9 +70,12 @@ const Dashboard = () => {
       {/* Header */}
       <div className="p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600">Welcome back! Here's what's happening with your store today.</p>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">{initials}</div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+              <p className="text-gray-600">Welcome back{user?.name ? `, ${user.name.split(' ')[0]}` : ''}! Here's what's happening with your store today.</p>
+            </div>
           </div>
           
           <div className="flex items-center gap-4">

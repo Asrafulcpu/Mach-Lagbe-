@@ -34,6 +34,7 @@ const Header = () => {
             {user ? (
               <>
                 <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
+                <span className="nav-username">Hi, {user.name ? user.name.split(' ')[0] : 'User'}</span>
                 <button onClick={handleLogout} className="btn btn-outline">Logout</button>
               </>
             ) : (
