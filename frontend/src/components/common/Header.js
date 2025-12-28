@@ -45,6 +45,9 @@ const Header = () => {
             {user ? (
               <>
                 <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
+                {user?.role === 'admin' ? (
+                  <Link to="/admin" onClick={() => setIsMenuOpen(false)}>Admin</Link>
+                ) : null}
                 <button className="avatar-btn" onClick={() => setIsDropdownOpen(!isDropdownOpen)} aria-haspopup="true">
                   {user?.avatar ? (
                     <img
@@ -77,6 +80,9 @@ const Header = () => {
                       </div>
                     </div>
                     <Link to="/profile" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>Profile</Link>
+                    {user?.role === 'admin' ? (
+                      <Link to="/admin" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>Admin Panel</Link>
+                    ) : null}
                     <button className="dropdown-item" onClick={() => { fileInputRef.current?.click(); }}>Upload Avatar</button>
                     <button className="dropdown-item" onClick={() => { handleLogout(); setIsDropdownOpen(false); }}>Logout</button>
                   </div>

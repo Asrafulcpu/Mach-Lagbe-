@@ -12,4 +12,7 @@ router.get('/', protect, ordersController.getOrders);
 // Delete orders (clear history)
 router.delete('/', protect, ordersController.deleteOrders);
 
+router.put('/:id', protect, ordersController.updateOrder);
+router.delete('/:id', protect, ordersController.deleteOrderById);
+
 module.exports = router;

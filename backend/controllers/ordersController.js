@@ -66,3 +66,47 @@ exports.deleteOrders = async (req, res) => {
     res.status(500).json({ success: false, error: 'Failed to delete orders' });
   }
 };
+
+exports.updateOrder = async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+
+    const allowed = ['status'];
+    const updates = {};
+    for (const key of allowed) {
+      if (Object.prototype.hasOwnProperty.call(req.body, key)) {
+        updates[key] = req.body[key];
+      }
+    }
+
+    const order = await Order.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
+    if (!order) {
+      return res.status(404).json({ success: false, error: 'Order not found' });
+    }
+    res.json({ success: true, order });
+  } catch (error) {
+    console.error('updateOrder error', error);
+    res.status(500).json({ success: false, error: 'Failed to update order' });
+  }
+};
+
+exports.deleteOrderById = async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ success: false, error: 'Order not found' });
+    }
+
+    await Order.deleteOne({ _id: order._id });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('deleteOrderById error', error);
+    res.status(500).json({ success: false, error: 'Failed to delete order' });
+  }
+};

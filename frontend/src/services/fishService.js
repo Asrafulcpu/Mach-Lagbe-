@@ -19,6 +19,24 @@ export const getFish = async (filters = {}) => {
   }
 };
 
+// Admin: get all fish including inactive
+export const getFishAdmin = async (filters = {}) => {
+  try {
+    const params = new URLSearchParams();
+
+    if (filters.category) params.append('category', filters.category);
+    if (filters.availability) params.append('availability', filters.availability);
+    if (filters.search) params.append('search', filters.search);
+
+    const queryString = params.toString();
+    const url = `/fish/admin${queryString ? `?${queryString}` : ''}`;
+    const response = await api.get(url);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to fetch fish' };
+  }
+};
+
 // Get single fish by ID
 export const getFishById = async (id) => {
   try {

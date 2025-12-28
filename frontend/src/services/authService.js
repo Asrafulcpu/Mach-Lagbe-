@@ -30,6 +30,16 @@ export const getCurrentUser = async () => {
   }
 };
 
+// Update current user profile
+export const updateProfile = async (profileData) => {
+  try {
+    const response = await api.put('/auth/me', profileData);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to update profile' };
+  }
+};
+
 // Logout (client-side only - clears token)
 export const logout = () => {
   localStorage.removeItem('token');

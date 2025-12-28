@@ -34,4 +34,24 @@ export const deleteOrders = async (params = {}) => {
   }
 };
 
+// Admin: update a single order (e.g., status)
+export const updateOrder = async (id, data) => {
+  try {
+    const response = await api.put(`/orders/${id}`, data);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to update order' };
+  }
+};
+
+// Admin: delete a single order
+export const deleteOrder = async (id) => {
+  try {
+    const response = await api.delete(`/orders/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to delete order' };
+  }
+};
+
 // Optionally export more helpers in future

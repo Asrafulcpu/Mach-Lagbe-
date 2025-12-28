@@ -131,3 +131,50 @@ exports.getMe = async (req, res) => {
     });
   }
 };
+
+// @desc    Update current user profile
+// @route   PUT /api/auth/me
+// @access  Private
+exports.updateMe = async (req, res) => {
+  try {
+    const allowed = ['name', 'phone', 'address'];
+    const updates = {};
+
+    for (const key of allowed) {
+      if (Object.prototype.hasOwnProperty.call(req.body, key)) {
+        updates[key] = req.body[key];
+      }
+    }
+
+    const userId = req.user._id || req.user.id;
+    const user = await User.findByIdAndUpdate(userId, updates, {
+      new: true,
+      runValidators: true,
+    }).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        role: user.role,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};

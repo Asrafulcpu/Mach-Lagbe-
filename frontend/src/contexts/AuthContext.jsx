@@ -103,6 +103,24 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  const updateProfile = useCallback(async (profileData) => {
+    try {
+      const res = await authService.updateProfile(profileData);
+      if (res?.success && res?.user) {
+        const token = localStorage.getItem('token');
+        const savedAvatar = localStorage.getItem('avatar');
+        const nextUser = { ...res.user, token };
+        if (savedAvatar) nextUser.avatar = savedAvatar;
+        setUser(nextUser);
+        localStorage.setItem('user', JSON.stringify(res.user));
+        return { success: true, user: nextUser };
+      }
+      return { success: false, message: res?.error || 'Failed to update profile' };
+    } catch (error) {
+      return { success: false, message: error?.error || error?.message || 'Failed to update profile' };
+    }
+  }, []);
+
   // Update avatar (accepts a File or a data URL string)
   const updateAvatar = useCallback(async (fileOrDataUrl) => {
     try {
@@ -144,6 +162,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    updateProfile,
     updateAvatar,
     loading,
     isAuthenticated: !!user,

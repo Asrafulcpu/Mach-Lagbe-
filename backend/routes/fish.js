@@ -3,11 +3,14 @@ const router = express.Router();
 const {
   getFish,
   getOneFish,
+  getFishAdmin,
   createFish,
   updateFish,
   deleteFish
 } = require('../controllers/fishController');
 const { protect, authorize } = require('../middleware/auth');
+
+router.get('/admin', protect, authorize('admin'), getFishAdmin);
 
 router.route('/')
   .get(getFish)

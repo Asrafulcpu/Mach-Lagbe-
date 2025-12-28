@@ -41,6 +41,42 @@ exports.getFish = async (req, res) => {
   }
 };
 
+exports.getFishAdmin = async (req, res) => {
+  try {
+    const { category, availability, search } = req.query;
+
+    let query = {};
+
+    if (category) {
+      query.category = category;
+    }
+
+    if (availability) {
+      query.availability = availability;
+    }
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const fish = await Fish.find(query).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: fish.length,
+      data: fish
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Server error'
+    });
+  }
+};
+
 // @desc    Get single fish by ID
 // @route   GET /api/fish/:id
 // @access  Public
