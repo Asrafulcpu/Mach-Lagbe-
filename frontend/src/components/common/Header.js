@@ -1,14 +1,17 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { CartContext } from '../../contexts/CartContext';
 import './Header.css';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, updateAvatar } = useAuth();
   const { cartItems } = useContext(CartContext);
   const navigate = useNavigate();
+
+  const fileInputRef = useRef(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -34,8 +37,35 @@ const Header = () => {
             {user ? (
               <>
                 <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
-                <span className="nav-username">Hi, {user.name ? user.name.split(' ')[0] : 'User'}</span>
-                <button onClick={handleLogout} className="btn btn-outline">Logout</button>
+                <button className="avatar-btn" onClick={() => setIsDropdownOpen(!isDropdownOpen)} aria-haspopup="true">
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt={user.name} className="avatar-img" />
+                  ) : (
+                    <div className="avatar-fallback">{(user?.name || 'U').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase()}</div>
+                  )}
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="profile-dropdown">
+                    <div className="profile-info">
+                      {user?.avatar ? <img src={user.avatar} alt={user.name} className="avatar-img-lg" /> : <div className="avatar-fallback-lg">{(user?.name || 'U').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase()}</div>}
+                      <div className="profile-text">
+                        <div className="profile-name">{user?.name}</div>
+                        <div className="profile-email">{user?.email}</div>
+                      </div>
+                    </div>
+                    <Link to="/profile" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>Profile</Link>
+                    <button className="dropdown-item" onClick={() => { fileInputRef.current?.click(); }}>Upload Avatar</button>
+                    <button className="dropdown-item" onClick={() => { handleLogout(); setIsDropdownOpen(false); }}>Logout</button>
+                  </div>
+                )}
+                <input ref={fileInputRef} type="file" accept="image/*" className="sr-only" onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    await updateAvatar(file);
+                    setIsDropdownOpen(false);
+                  }
+                }} />
               </>
             ) : (
               <>
