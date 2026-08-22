@@ -33,13 +33,11 @@ const Cart = () => {
         clearCart();
         navigate('/dashboard');
       } else {
-        throw new Error(result?.message || 'Failed to place order');
+        alert('Failed to place order');
       }
-
     } catch (err) {
       console.error(err);
-      const msg = err?.error || err?.message || 'Error placing order. Please ensure backend is running and you are logged in.';
-      alert(msg);
+      alert('Error placing order');
     }
   };
 

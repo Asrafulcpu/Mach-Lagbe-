@@ -1,5 +1,4 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import * as authService from '../services/authService';
 
 export const AuthContext = createContext();
 
@@ -33,92 +32,120 @@ export function AuthProvider({ children }) {
       }
     };
 
-    const hydrateFromServer = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        const me = await authService.getCurrentUser();
-        if (me?.success && me?.user) {
-          const savedAvatar = localStorage.getItem('avatar');
-          const nextUser = { ...me.user, token };
-          if (savedAvatar) nextUser.avatar = savedAvatar;
-          setUser(nextUser);
-          localStorage.setItem('user', JSON.stringify(me.user));
-        }
-      } catch (e) {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        setUser(null);
-      }
-    };
-
-    (async () => {
-      initializeAuth();
-      await hydrateFromServer();
-    })();
+    initializeAuth();
   }, []);
 
+  // Mock login function
   const login = useCallback(async (email, password) => {
     try {
-      const res = await authService.login(email, password);
-      if (res?.success && res?.token && res?.user) {
-        localStorage.setItem('token', res.token);
-        localStorage.setItem('user', JSON.stringify(res.user));
-
-        const savedAvatar = localStorage.getItem('avatar');
-        const nextUser = { ...res.user, token: res.token };
-        if (savedAvatar) nextUser.avatar = savedAvatar;
-        setUser(nextUser);
-
-        return { success: true, user: nextUser, message: 'Login successful' };
+      // Input validation
+      if (!email || !password) {
+        throw new Error('Email and password are required');
       }
-      return { success: false, user: null, message: res?.error || 'Login failed' };
+
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Mock validation
+      if (password.length < 3) {
+        throw new Error('Password must be at least 3 characters');
+      }
+
+      // Check if user exists in registered users
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const existingUser = registeredUsers.find(u => u.email === email);
+      
+      // Mock user data
+      const mockUser = {
+        id: existingUser?.id || Date.now(),
+        name: existingUser?.name || email.split('@')[0] || 'Demo User',
+        email: email,
+        role: email.includes('admin') ? 'admin' : 'customer',
+        token: 'mock-jwt-token-for-demo-' + Date.now()
+      };
+      
+      // Save to localStorage
+      const { token, ...userWithoutToken } = mockUser;
+      localStorage.setItem('user', JSON.stringify(userWithoutToken));
+      localStorage.setItem('token', token);
+      setUser(mockUser);
+      
+      return { 
+        success: true, 
+        user: mockUser,
+        message: 'Login successful' 
+      };
     } catch (error) {
-      return { success: false, user: null, message: error?.error || error?.message || 'Login failed' };
+      return { 
+        success: false, 
+        user: null,
+        message: error.message || 'Invalid email or password' 
+      };
     }
   }, []);
 
+  // Mock register function
   const register = useCallback(async (userData) => {
     try {
-      const res = await authService.register(userData);
-      if (res?.success && res?.token && res?.user) {
-        localStorage.setItem('token', res.token);
-        localStorage.setItem('user', JSON.stringify(res.user));
-
-        const savedAvatar = localStorage.getItem('avatar');
-        const nextUser = { ...res.user, token: res.token };
-        if (savedAvatar) nextUser.avatar = savedAvatar;
-        setUser(nextUser);
-
-        return { success: true, user: nextUser, message: 'Registration successful' };
+      // Input validation
+      if (!userData.email || !userData.password || !userData.name) {
+        throw new Error('Name, email and password are required');
       }
-      return { success: false, user: null, message: res?.error || 'Registration failed' };
+
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Check if user already exists
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const userExists = registeredUsers.some(u => u.email === userData.email);
+      
+      if (userExists) {
+        throw new Error('User with this email already exists');
+      }
+      
+      // Create new user
+      const mockUser = {
+        id: Date.now(),
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone || '',
+        role: 'customer',
+        createdAt: new Date().toISOString(),
+        token: 'mock-jwt-token-for-demo-' + Date.now()
+      };
+      
+      // Save to registered users list
+      registeredUsers.push({ 
+        id: mockUser.id, 
+        email: userData.email, 
+        name: userData.name 
+      });
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      
+      // Save current session
+      const { token, ...userWithoutToken } = mockUser;
+      localStorage.setItem('user', JSON.stringify(userWithoutToken));
+      localStorage.setItem('token', token);
+      setUser(mockUser);
+      
+      return { 
+        success: true, 
+        user: mockUser,
+        message: 'Registration successful' 
+      };
     } catch (error) {
-      return { success: false, user: null, message: error?.error || error?.message || 'Registration failed' };
+      return { 
+        success: false, 
+        user: null,
+        message: error.message || 'Registration failed' 
+      };
     }
   }, []);
 
   const logout = useCallback(() => {
-    authService.logout();
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
     setUser(null);
-  }, []);
-
-  const updateProfile = useCallback(async (profileData) => {
-    try {
-      const res = await authService.updateProfile(profileData);
-      if (res?.success && res?.user) {
-        const token = localStorage.getItem('token');
-        const savedAvatar = localStorage.getItem('avatar');
-        const nextUser = { ...res.user, token };
-        if (savedAvatar) nextUser.avatar = savedAvatar;
-        setUser(nextUser);
-        localStorage.setItem('user', JSON.stringify(res.user));
-        return { success: true, user: nextUser };
-      }
-      return { success: false, message: res?.error || 'Failed to update profile' };
-    } catch (error) {
-      return { success: false, message: error?.error || error?.message || 'Failed to update profile' };
-    }
   }, []);
 
   // Update avatar (accepts a File or a data URL string)
@@ -162,7 +189,6 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
-    updateProfile,
     updateAvatar,
     loading,
     isAuthenticated: !!user,

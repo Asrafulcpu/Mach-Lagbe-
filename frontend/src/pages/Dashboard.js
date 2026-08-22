@@ -1,362 +1,347 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
-/* ---------- Card Component ---------- */
+// Simple Card component - defined inline
 const Card = ({ children, className = '', onClick }) => {
   return (
-    <div
+    <div 
+      className={`bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow ${className}`}
       onClick={onClick}
-      className={className}
-      style={{
-        background: 'rgba(255, 255, 255, 0.92)',
-        border: '1px solid rgba(148, 163, 184, 0.35)',
-        borderRadius: 16,
-        boxShadow: '0 10px 30px rgba(2, 6, 23, 0.08)',
-        padding: 16,
-        transition: 'transform 150ms ease, box-shadow 150ms ease',
-        cursor: onClick ? 'pointer' : 'default',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 16px 45px rgba(2, 6, 23, 0.12)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0px)';
-        e.currentTarget.style.boxShadow = '0 10px 30px rgba(2, 6, 23, 0.08)';
-      }}
     >
       {children}
     </div>
   );
 };
 
-/* ---------- Button Component ---------- */
+// Simple Button component - defined inline
 const Button = ({ children, onClick, className = '', type = 'button', disabled = false }) => {
   return (
     <button
       type={type}
+      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 ${className}`}
       onClick={onClick}
       disabled={disabled}
-      className={className}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
-        borderRadius: 12,
-        fontSize: 14,
-        fontWeight: 700,
-        padding: '10px 14px',
-        border: '1px solid rgba(255,255,255,0.25)',
-        color: '#fff',
-        background: disabled
-          ? 'linear-gradient(135deg, rgba(148,163,184,0.8), rgba(100,116,139,0.8))'
-          : 'linear-gradient(135deg, #2563eb, #06b6d4)',
-        boxShadow: disabled ? 'none' : '0 12px 30px rgba(37, 99, 235, 0.25)',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        transition: 'transform 150ms ease, box-shadow 150ms ease, filter 150ms ease',
-      }}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.transform = 'translateY(-1px)';
-        e.currentTarget.style.filter = 'saturate(1.1)';
-        e.currentTarget.style.boxShadow = '0 16px 40px rgba(37, 99, 235, 0.30)';
-      }}
-      onMouseLeave={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.transform = 'translateY(0px)';
-        e.currentTarget.style.filter = 'none';
-        e.currentTarget.style.boxShadow = '0 12px 30px rgba(37, 99, 235, 0.25)';
-      }}
     >
       {children}
     </button>
   );
 };
 
-/* ---------- Icon Components ---------- */
-const UsersIcon = () => <span style={{ fontSize: '24px' }}>👥</span>;
-const ChartIcon = () => <span style={{ fontSize: '24px' }}>📊</span>;
-const MoneyIcon = () => <span style={{ fontSize: '24px' }}>💰</span>;
+// Icon components - we'll use simple emojis or text as fallback
+const UsersIcon = () => <span>👥</span>;
+const BarChartIcon = () => <span>📊</span>;
+const ShoppingBagIcon = () => <span>🛍️</span>;
+const TrendingUpIcon = () => <span>📈</span>;
+const TrendingDownIcon = () => <span>📉</span>;
+const DollarIcon = () => <span>💰</span>;
+const PackageIcon = () => <span>📦</span>;
+const DownloadIcon = () => <span>⬇️</span>;
+const CalendarIcon = () => <span>📅</span>;
+const ArrowRightIcon = () => <span>→</span>;
+const EyeIcon = () => <span>👁️</span>;
+const ShoppingCartIcon = () => <span>🛒</span>;
+const CreditCardIcon = () => <span>💳</span>;
+const ActivityIcon = () => <span>⚡</span>;
+const TargetIcon = () => <span>🎯</span>;
 
-/* ---------- Dashboard ---------- */
 const Dashboard = () => {
-  const { user, logout } = useAuth();
+  const [selectedPeriod, setSelectedPeriod] = useState('monthly');
+  const { user } = useAuth();
 
-  const [transactions, setTransactions] = React.useState([]);
-  const [loadingTx, setLoadingTx] = React.useState(true);
-  const [txError, setTxError] = React.useState('');
-
-  const loadOrders = React.useCallback(async () => {
-    try {
-      setTxError('');
-      setLoadingTx(true);
-      if (!user) {
-        setTransactions([]);
-        return;
-      }
-
-      const ordersService = await import('../services/ordersService');
-      const res = await ordersService.getOrders();
-      if (res?.success) {
-        setTransactions(res.orders || []);
-      } else {
-        setTxError(res?.error || 'Failed to load transactions');
-        setTransactions([]);
-      }
-    } catch (e) {
-      setTxError(e?.error || e?.message || 'Failed to load transactions');
-      setTransactions([]);
-    } finally {
-      setLoadingTx(false);
-    }
-  }, [user]);
+  const initials = user?.name
+    ? user.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()
+    : 'U';
+  const avatarUrl = user?.avatar || (user?.name ? `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0D8ABC&color=fff&size=128` : null);
+  
+  // Real data
+  const [orders, setOrders] = React.useState([]);
+  const [loadingOrders, setLoadingOrders] = React.useState(true);
 
   React.useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        if (mounted) await loadOrders();
-      } catch (e) {
-        if (mounted) {
-          setTxError(e?.error || e?.message || 'Failed to load transactions');
-          setTransactions([]);
+        const ordersService = await import('../services/ordersService');
+        const res = await ordersService.getOrders();
+        if (mounted && res?.success) {
+          setOrders(res.orders || []);
         }
+      } catch (err) {
+        console.error('Failed to fetch orders', err);
       } finally {
-        if (mounted) setLoadingTx(false);
+        if (mounted) setLoadingOrders(false);
       }
     })();
-
-    return () => {
-      mounted = false;
-    };
-  }, [loadOrders, user]);
-
-  const handleClearHistory = async () => {
-    if (!user) return;
-    const ok = window.confirm('Delete your order history? This cannot be undone.');
-    if (!ok) return;
-
-    try {
-      setTxError('');
-      const ordersService = await import('../services/ordersService');
-      await ordersService.deleteOrders();
-      await loadOrders();
-    } catch (e) {
-      setTxError(e?.error || e?.message || 'Failed to delete order history');
-    }
-  };
-
-  const initials = (user?.name || 'U')
-    .split(' ')
-    .filter(Boolean)
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-
-  const statusStyles = (status) => {
-    const s = String(status || '').toLowerCase();
-    if (s === 'offline') return { bg: 'rgba(245, 158, 11, 0.14)', fg: '#b45309', bd: 'rgba(245, 158, 11, 0.35)' };
-    if (s === 'placed' || s === 'completed') return { bg: 'rgba(16, 185, 129, 0.14)', fg: '#047857', bd: 'rgba(16, 185, 129, 0.35)' };
-    if (s === 'pending' || s === 'processing') return { bg: 'rgba(59, 130, 246, 0.14)', fg: '#1d4ed8', bd: 'rgba(59, 130, 246, 0.35)' };
-    return { bg: 'rgba(148, 163, 184, 0.16)', fg: '#475569', bd: 'rgba(148, 163, 184, 0.35)' };
-  };
+    return () => { mounted = false };
+  }, []);
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        padding: '28px 16px',
-        background:
-          'radial-gradient(1200px 600px at 10% 10%, rgba(6, 182, 212, 0.25), transparent 60%), radial-gradient(900px 450px at 90% 20%, rgba(37, 99, 235, 0.25), transparent 55%), radial-gradient(900px 450px at 30% 90%, rgba(168, 85, 247, 0.18), transparent 55%), linear-gradient(135deg, #f8fafc, #eef2ff)',
-      }}
-    >
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: 16,
-            flexWrap: 'wrap',
-            marginBottom: 18,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 14,
-                display: 'grid',
-                placeItems: 'center',
-                fontWeight: 900,
-                color: '#0f172a',
-                background: 'linear-gradient(135deg, rgba(6,182,212,0.35), rgba(37,99,235,0.35))',
-                border: '1px solid rgba(2, 6, 23, 0.06)',
-              }}
-            >
-              {initials}
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Header */}
+      <div className="p-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div className="flex items-center gap-4">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={user?.name} className="w-12 h-12 rounded-full object-cover" />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">{initials}</div>
+            )}
             <div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: '#0f172a', lineHeight: 1.15 }}>
-                Dashboard
-              </div>
-              <div style={{ color: '#475569', fontSize: 13 }}>
-                Welcome back{user?.name ? `, ${user.name}` : ''}{user?.email ? ` • ${user.email}` : ''}
-              </div>
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+              <p className="text-gray-600">Welcome back{user?.name ? `, ${user.name.split(' ')[0]}` : ''}! Here's what's happening with your store today.</p>
             </div>
           </div>
-
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Button
-              onClick={handleClearHistory}
-              disabled={loadingTx || !transactions.length}
-              className="clear-history-btn"
-            >
-              Clear History
+          
+            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+              <CalendarIcon />
+              <select 
+                className="bg-transparent border-none focus:ring-0 text-gray-700"
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+              >
+                <option value="weekly">Last 7 days</option>
+                <option value="monthly">This month</option>
+                <option value="quarterly">This quarter</option>
+                <option value="yearly">This year</option>
+              </select>
+            </div>
+            
+            <Button>
+              <DownloadIcon />
+              <span className="ml-2">Export Report</span>
             </Button>
-            <Button onClick={logout}>Logout</Button>
           </div>
         </div>
 
-        <div style={{ marginTop: 10 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
-            <h2 style={{ fontSize: 18, fontWeight: 900, margin: 0, color: '#0f172a' }}>Your Transactions</h2>
-            <div style={{ fontSize: 12, color: '#64748b' }}>Showing your saved orders</div>
-          </div>
-        {loadingTx ? (
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Total Revenue */}
+          <Card className="p-6">
+            <div className="flex justify-between items-start">
               <div>
-                <div style={{ fontWeight: 900, color: '#0f172a' }}>Loading...</div>
-                <div style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>Fetching your orders from server</div>
-              </div>
-              <div style={{ color: '#94a3b8', fontSize: 26, lineHeight: 1 }}>⏳</div>
-            </div>
-          </Card>
-        ) : txError ? (
-          <Card>
-            <div style={{ fontWeight: 900, color: '#0f172a' }}>Could not load transactions</div>
-            <div style={{ color: '#b91c1c', fontSize: 13, marginTop: 6 }}>{txError}</div>
-            <div style={{ color: '#64748b', fontSize: 13, marginTop: 6 }}>
-              Make sure backend is running and you are logged in.
-            </div>
-          </Card>
-        ) : transactions.length === 0 ? (
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ fontWeight: 900, color: '#0f172a' }}>No transactions yet</div>
-                <div style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>
-                  Place an order from Cart to see it here.
+                <p className="text-gray-600 text-sm font-medium">Total Revenue</p>
+                <h3 className="text-3xl font-bold mt-2">$24,580</h3>
+                <div className="flex items-center mt-2">
+                  <TrendingUpIcon />
+                  <span className="text-green-600 text-sm font-medium ml-1">+12.5%</span>
+                  <span className="text-gray-500 text-sm ml-2">from last month</span>
                 </div>
               </div>
-              <div style={{ color: '#94a3b8', fontSize: 26, lineHeight: 1 }}>🧾</div>
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <DollarIcon />
+              </div>
             </div>
           </Card>
-        ) : (
-          <div style={{ display: 'grid', gap: 12, marginTop: 10 }}>
-            {transactions.map((t) => (
-              <Card key={t._id}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                      <div style={{ fontWeight: 900, color: '#0f172a' }}>Order #{String(t._id).slice(-8)}</div>
-                      {(() => {
-                        const st = statusStyles(t.status);
-                        return (
-                          <span
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 800,
-                              padding: '4px 10px',
-                              borderRadius: 999,
-                              background: st.bg,
-                              color: st.fg,
-                              border: `1px solid ${st.bd}`,
-                            }}
-                          >
-                            {String(t.status || 'placed').toUpperCase()}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                    <div style={{ color: '#64748b', fontSize: 13, marginTop: 2 }}>
-                      {t.createdAt ? new Date(t.createdAt).toLocaleString() : ''}
-                    </div>
-                    <div style={{ marginTop: 10 }}>
-                      {(t.items || []).slice(0, 3).map((it, idx) => (
-                        <div key={idx} style={{ fontSize: 14, color: '#0f172a' }}>
-                          <span style={{ fontWeight: 700 }}>{it.name}</span>
-                          <span style={{ color: '#64748b' }}> — {it.quantity} kg</span>
-                        </div>
-                      ))}
-                      {(t.items || []).length > 3 ? (
-                        <div style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>
-                          +{(t.items || []).length - 3} more items
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
 
-                  <div style={{ textAlign: 'right', minWidth: 140 }}>
-                    <div style={{ fontWeight: 900, fontSize: 18, color: '#0f172a' }}>৳{Number(t.total || 0).toFixed(2)}</div>
-                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Total amount</div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-            gap: 16,
-            marginTop: 18,
-          }}
-        >
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          {/* Active Users */}
+          <Card className="p-6">
+            <div className="flex justify-between items-start">
               <div>
-                <div style={{ color: '#64748b', fontSize: 12, fontWeight: 800 }}>TOTAL USERS</div>
-                <div style={{ fontSize: 28, fontWeight: 900, color: '#0f172a', marginTop: 6 }}>120</div>
+                <p className="text-gray-600 text-sm font-medium">Active Users</p>
+                <h3 className="text-3xl font-bold mt-2">1,842</h3>
+                <div className="flex items-center mt-2">
+                  <TrendingUpIcon />
+                  <span className="text-green-600 text-sm font-medium ml-1">+8.2%</span>
+                  <span className="text-gray-500 text-sm ml-2">from last week</span>
+                </div>
               </div>
-              <div style={{ width: 42, height: 42, borderRadius: 14, display: 'grid', placeItems: 'center', background: 'linear-gradient(135deg, rgba(16,185,129,0.20), rgba(6,182,212,0.22))' }}>
+              <div className="p-3 bg-green-100 rounded-lg">
                 <UsersIcon />
               </div>
             </div>
           </Card>
 
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          {/* Total Orders */}
+          <Card className="p-6">
+            <div className="flex justify-between items-start">
               <div>
-                <div style={{ color: '#64748b', fontSize: 12, fontWeight: 800 }}>MONTHLY GROWTH</div>
-                <div style={{ fontSize: 28, fontWeight: 900, color: '#0f172a', marginTop: 6 }}>+18%</div>
+                <p className="text-gray-600 text-sm font-medium">Total Orders</p>
+                <h3 className="text-3xl font-bold mt-2">324</h3>
+                <div className="flex items-center mt-2">
+                  <TrendingUpIcon />
+                  <span className="text-green-600 text-sm font-medium ml-1">+4.3%</span>
+                  <span className="text-gray-500 text-sm ml-2">from last month</span>
+                </div>
               </div>
-              <div style={{ width: 42, height: 42, borderRadius: 14, display: 'grid', placeItems: 'center', background: 'linear-gradient(135deg, rgba(37,99,235,0.20), rgba(168,85,247,0.20))' }}>
-                <ChartIcon />
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <ShoppingBagIcon />
               </div>
             </div>
           </Card>
 
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          {/* Conversion Rate */}
+          <Card className="p-6">
+            <div className="flex justify-between items-start">
               <div>
-                <div style={{ color: '#64748b', fontSize: 12, fontWeight: 800 }}>REVENUE</div>
-                <div style={{ fontSize: 28, fontWeight: 900, color: '#0f172a', marginTop: 6 }}>$2,450</div>
+                <p className="text-gray-600 text-sm font-medium">Conversion Rate</p>
+                <h3 className="text-3xl font-bold mt-2">3.24%</h3>
+                <div className="flex items-center mt-2">
+                  <TrendingDownIcon />
+                  <span className="text-red-600 text-sm font-medium ml-1">-1.2%</span>
+                  <span className="text-gray-500 text-sm ml-2">from last month</span>
+                </div>
               </div>
-              <div style={{ width: 42, height: 42, borderRadius: 14, display: 'grid', placeItems: 'center', background: 'linear-gradient(135deg, rgba(245,158,11,0.18), rgba(239,68,68,0.16))' }}>
-                <MoneyIcon />
+              <div className="p-3 bg-orange-100 rounded-lg">
+                <TargetIcon />
               </div>
             </div>
           </Card>
+        </div>
+
+        {/* Charts and Data Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Revenue Chart Area */}
+          <div className="lg:col-span-2">
+            <Card className="p-6 h-full">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Revenue Overview</h3>
+                  <p className="text-gray-600">Monthly revenue performance</p>
+                </div>
+                <Button className="bg-white text-gray-700 border border-gray-300 hover:bg-gray-100">
+                  View Details
+                  <ArrowRightIcon />
+                </Button>
+              </div>
+              
+              {/* Simplified Chart */}
+              <div className="space-y-4">
+                <div className="h-64 flex items-end gap-2 p-4">
+                  {[65, 80, 60, 90, 75, 85, 70].map((height, index) => (
+                    <div key={index} className="flex-1 flex flex-col items-center">
+                      <div 
+                        className="w-8 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-t-lg"
+                        style={{ height: `${height}%` }}
+                      />
+                      <span className="text-xs text-gray-500 mt-2">
+                        {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'][index]}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <div className="flex items-center">
+                    <ActivityIcon />
+                    <span className="text-gray-700 ml-2">Average daily revenue: $2,842</span>
+                  </div>
+                  <div className="text-sm text-gray-500">Last updated: Today</div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Top Products */}
+          <Card className="p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Top Products</h3>
+                <p className="text-gray-600">Best selling items</p>
+              </div>
+            </div>
+            
+              <div className="space-y-4">
+              {loadingOrders ? <p>Loading orders...</p> : (
+                (orders || []).slice(0,6).map((order) => (
+                  <div key={order._id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-50 rounded-lg">
+                        <PackageIcon />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">Order #{order._id.slice(-6)}</h4>
+                        <p className="text-sm text-gray-600">{order.items.length} items • {order.user?.name || 'Guest'}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-900">৳{order.total.toFixed(2)}</p>
+                      <div className="flex items-center justify-end">
+                        <span className="text-xs text-gray-500 ml-1">{new Date(order.createdAt).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            
+            <Button className="w-full mt-6 bg-white text-gray-700 border border-gray-300 hover:bg-gray-100">
+              View All Products
+            </Button>
+          </Card>
+        </div>
+
+        {/* Recent Activities & Quick Stats */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recent Activities */}
+          <div className="lg:col-span-2">
+            <Card className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Recent Activities</h3>
+                  <p className="text-gray-600">Latest user interactions</p>
+                </div>
+                <button className="text-blue-600 hover:text-blue-800">
+                  See All
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {loadingOrders ? <p>Loading activities...</p> : (
+                  (orders || []).slice(0,6).map((order) => (
+                    <div key={order._id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <UsersIcon />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-gray-900">
+                          <span className="font-semibold">{order.user?.name || 'Guest'}</span> placed an order
+                          <span className="font-semibold text-green-600"> ৳{order.total.toFixed(2)}</span>
+                        </p>
+                        <p className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleString()}</p>
+                      </div>
+                      <button className="hover:bg-gray-200 p-2 rounded">
+                        <EyeIcon />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </Card>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Stats</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <ShoppingCartIcon />
+                    <span className="text-gray-700">Avg. Order Value</span>
+                  </div>
+                  <span className="font-bold">$89.42</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <CreditCardIcon />
+                    <span className="text-gray-700">Refund Rate</span>
+                  </div>
+                  <span className="font-bold text-green-600">2.4%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <BarChartIcon />
+                    <span className="text-gray-700">Bounce Rate</span>
+                  </div>
+                  <span className="font-bold text-orange-600">34.2%</span>
+                </div>
+              </div>
+              
+              <Button className="w-full mt-6 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600">
+                Generate Report
+              </Button>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
